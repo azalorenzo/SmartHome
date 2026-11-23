@@ -53,7 +53,7 @@ estado       = "ENCENDIDO" | "APAGADO" | "ABIERTA" | "CERRADA" |
 - Una instrucción por línea y al menos una por programa. Se permiten líneas vacías, espacios y tabulaciones fuera de las cadenas, y saltos LF o CRLF.
 - Las palabras reservadas y estados van en mayúsculas. Los identificadores siguen `[a-z][a-z0-9_]*`. Las cadenas usan comillas dobles, ocupan una línea y admiten comillas y barras invertidas escapadas.
 - `SI … ENTONCES` compara el estado actual y ejecuta un comando simple si coincide. `REPETIR`, `SINO`, variables y condiciones anidadas quedan fuera del alcance.
-- El AST incorpora `Program`, `Control`, `Query`, `ListDevices`, `Notify`, `SendEmail` e `If`, con posiciones de origen. Los diagnósticos tienen `phase`, `line`, `column` y `message`. Las posiciones empiezan en 1.
+- El AST incorpora `Programa`, `Control`, `Consulta`, `ListadoDispositivos`, `Notificacion`, `EnvioCorreo` y `Condicional`, con posiciones de origen. Los diagnósticos tienen `fase`, `linea`, `columna` y `mensaje`. El analizador usa `lexica` para errores del lexer y `sintactica` para errores del parser. Las posiciones empiezan en 1.
 
 | Entrada | Resultado esperado |
 |---|---|
@@ -67,7 +67,7 @@ estado       = "ENCENDIDO" | "APAGADO" | "ABIERTA" | "CERRADA" |
 
 | Función | Entrada y salida |
 |---|---|
-| `parse(source)` | Texto completo → AST o diagnósticos léxicos/sintácticos. |
+| `parse(fuente)` | Texto completo → `Programa` o una lista con el primer `Diagnostico` léxico o sintáctico. Disponible en `backend.language`. |
 | `compile_program(ast, symbols)` | AST y tabla de símbolos → código intermedio o diagnósticos semánticos. Valida dispositivos, tipos, operaciones, estados, mensajes con contenido y destinatarios con formato válido. |
 | `optimize(ir)` | Código intermedio → código equivalente con destinos de salto válidos. |
 | `execute(ir, services)` | Código intermedio y servicios de dispositivos, notificaciones y SMTP → resultados en orden y, si corresponde, un fallo de ejecución. |
@@ -106,11 +106,11 @@ La persona 1 inicializa `main` y crea `develop` desde ella. Las ramas de trabajo
 
 | Turno | Responsable | Ramas, en orden | Entrega y prueba de aceptación |
 |---|---|---|---|
-| **1 · Primera jornada** | **Persona 1 — Lenguaje** | `feature/lexer` → `feature/parser` | En `backend/language/`, entrega EBNF, tokens, lexer, parser, AST y diagnósticos. El programa de demo genera un AST y se distinguen los errores léxico y sintáctico. |
+| **1 · Primera jornada** | **Persona 1 — Lenguaje** | `feature/lexer` → `feature/parser` | Entrega la gramática en `docs/gramatica.ebnf` y los tokens, el lexer, el parser, el AST y los diagnósticos en `backend/language/`. El programa de demo genera un AST y se distinguen los errores léxico y sintáctico. |
 | **2** | **Persona 2 — Semántica e IR** | `feature/semantic` → `feature/ir` | En `backend/compiler/`, entrega tabla de símbolos, validación y generación de IR. Rechaza identificadores, operaciones, estados y correos inválidos. Genera un salto correcto para el condicional. |
 | **3** | **Persona 3 — Ejecutor y optimizador** | `feature/executor` → `feature/optimizer` | En `backend/runtime/`, entrega máquina virtual, servicios en memoria, SMTP y las dos optimizaciones. Demuestra condición verdadera y falsa, correo visible en Mailpit y equivalencia de resultados optimizados. |
 | **4** | **Persona 4 — Persistencia y API** | `feature/persistence` → `feature/api` | En `backend/db/` y `backend/api/`, entrega migraciones, datos iniciales, repositorios, API e integración. Deja Compose con `backend`, `postgres` y `mailpit`. Ejecuta un lote por HTTP y verifica persistencia de estado e historial tras reiniciar. |
-| **5** | **Persona 5 — Interfaz y despliegue** | `feature/frontend` → `feature/docker` | En `frontend/`, entrega consola, tarjetas, resultados, historial y notificaciones. Agrega el servicio `frontend` a Compose y completa el README. Demuestra la aplicación desde el navegador en una instalación limpia. |
+| **5** | **Persona 5 — Interfaz y despliegue** | `feature/frontend` → `feature/docker` | En `frontend/`, entrega consola, tarjetas, resultados, historial y notificaciones. Integra la interfaz con el servicio `frontend` existente en Compose, verifica el despliegue completo y completa el README. Demuestra la aplicación desde el navegador en una instalación limpia. |
 
 ### Reglas de traspaso
 
@@ -142,4 +142,4 @@ La consulta devuelve `ENCENDIDO`. Al cierre, la luz y el ventilador están encen
 
 La entrega incluye la aplicación en `main`, README de instalación, pruebas automatizadas, evidencia funcional, tablero, contribuciones verificables y documentación técnica de arquitectura, gramática, tokens, AST, tabla de símbolos, validaciones, IR, optimizaciones, ejecutor y modelo de base de datos.
 
-**Primer paso.** La persona 1 crea `main`, `develop`, el tablero y `feature/lexer`. Tras integrar el lexer, crea `feature/parser`. Cuando `parse(source)` pase las pruebas y quede en `develop`, entrega el turno a la persona 2.
+**Primer paso.** La persona 1 crea `main`, `develop`, el tablero y `feature/lexer`. Tras integrar el lexer, crea `feature/parser`. Cuando `parse(fuente)` pase las pruebas y quede en `develop`, entrega el turno a la persona 2.

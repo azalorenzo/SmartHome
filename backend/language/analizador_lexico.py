@@ -18,7 +18,7 @@ _IDENTIFICADOR = re.compile(r"[a-z][a-z0-9_]*")
 
 class ErrorLexico(ValueError):
     def __init__(self, linea: int, columna: int, mensaje: str) -> None:
-        self.diagnostico = Diagnostico("lexical", linea, columna, mensaje)
+        self.diagnostico = Diagnostico("lexica", linea, columna, mensaje)
         super().__init__(f"{linea}:{columna}: {mensaje}")
 
 
