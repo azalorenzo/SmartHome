@@ -36,3 +36,15 @@ La plantilla trae una pantalla inicial y una ruta de verificación de FastAPI. E
 ## Primer turno
 
 Importar esta carpeta al repositorio de GitHub. La persona 1 crea `main` y `develop` y abre `feature/lexer` desde `develop`. Una vez integrado el lexer, abre `feature/parser` desde `develop` actualizado. Cada persona recibe su turno al quedar integradas las dos ramas del bloque anterior.
+
+El punto de entrada del lenguaje es `from backend.language import parse`.
+`parse(fuente)` devuelve un `Programa` con sus instrucciones en orden o una
+lista con el primer diagnóstico léxico o sintáctico. Las posiciones del árbol
+y de los diagnósticos empiezan en 1. Los nodos se definen en
+[`arbol_sintactico.py`](backend/language/arbol_sintactico.py).
+
+Para verificar el lexer y el parser desde la raíz del proyecto:
+
+```sh
+python -m pytest backend/tests
+```

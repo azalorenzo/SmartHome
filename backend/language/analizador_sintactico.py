@@ -1,8 +1,10 @@
 from .analizador_lexico import ErrorLexico, tokenizar
 from .arbol_sintactico import (
+    Condicional,
     Consulta,
     Control,
     EnvioCorreo,
+    Instruccion,
     InstruccionSimple,
     ListadoDispositivos,
     Notificacion,
@@ -19,6 +21,14 @@ _OPERACIONES = {
     TipoComponente.CERRAR,
     TipoComponente.ACTIVAR,
     TipoComponente.DESACTIVAR,
+}
+_ESTADOS = {
+    TipoComponente.ENCENDIDO,
+    TipoComponente.APAGADO,
+    TipoComponente.ABIERTA,
+    TipoComponente.CERRADA,
+    TipoComponente.ACTIVADA,
+    TipoComponente.DESACTIVADA,
 }
 _DESCRIPCIONES = {
     TipoComponente.ID: "un identificador de dispositivo",
@@ -65,16 +75,31 @@ class _AnalizadorSintactico:
     def programa(self) -> Programa:
         self._omitir_saltos()
         inicio = self._actual
-        instrucciones = [self._simple()]
+        instrucciones = [self._instruccion()]
 
         while self._actual.tipo is not TipoComponente.FIN:
             self._consumir(TipoComponente.SALTO)
             self._omitir_saltos()
             if self._actual.tipo is TipoComponente.FIN:
                 break
-            instrucciones.append(self._simple())
+            instrucciones.append(self._instruccion())
 
         return Programa(inicio.linea, inicio.columna, tuple(instrucciones))
+
+    def _instruccion(self) -> Instruccion:
+        if self._actual.tipo is not TipoComponente.SI:
+            return self._simple()
+
+        inicio = self._avanzar()
+        dispositivo = self._consumir(TipoComponente.ID)
+        self._consumir(TipoComponente.IGUALDAD)
+        if self._actual.tipo not in _ESTADOS:
+            raise _ErrorSintactico(self._actual, "un estado")
+        estado = self._avanzar()
+        self._consumir(TipoComponente.ENTONCES)
+        return Condicional(
+            inicio.linea, inicio.columna, dispositivo.valor, estado.tipo, self._simple()
+        )
 
     def _simple(self) -> InstruccionSimple:
         inicio = self._actual

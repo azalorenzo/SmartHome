@@ -1,7 +1,10 @@
+from pathlib import Path
+
 import pytest
 
 from backend.language import parse
 from backend.language.arbol_sintactico import (
+    Condicional,
     Consulta,
     Control,
     EnvioCorreo,
@@ -10,6 +13,44 @@ from backend.language.arbol_sintactico import (
     Programa,
 )
 from backend.language.componentes_lexicos import TipoComponente
+
+
+def test_construye_arbol_completo_de_la_demostracion():
+    demostracion = Path(__file__).resolve().parents[2] / "examples" / "demo.smarthome.txt"
+
+    assert parse(demostracion.read_text(encoding="utf-8")) == Programa(
+        1,
+        1,
+        (
+            Control(1, 1, TipoComponente.ENCENDER, "luz_sala"),
+            Consulta(2, 1, "luz_sala"),
+            Control(3, 1, TipoComponente.ENCENDER, "ventilador1"),
+            Control(4, 1, TipoComponente.ABRIR, "puerta_principal"),
+            Control(5, 1, TipoComponente.ACTIVAR, "alarma1"),
+            Condicional(
+                6,
+                1,
+                "puerta_principal",
+                TipoComponente.ABIERTA,
+                Control(6, 41, TipoComponente.CERRAR, "puerta_principal"),
+            ),
+            Notificacion(7, 1, "Puerta cerrada y alarma activada"),
+            EnvioCorreo(8, 1, "demo@example.com", "Revisión completada"),
+            ListadoDispositivos(9, 1),
+        ),
+    )
+
+
+def test_acepta_un_estado_reservado_sin_validar_el_tipo_de_dispositivo():
+    assert parse('SI puerta_principal == ENCENDIDO ENTONCES NOTIFICAR ""') == Programa(
+        1,
+        1,
+        (
+            Condicional(
+                1, 1, "puerta_principal", TipoComponente.ENCENDIDO, Notificacion(1, 43, "")
+            ),
+        ),
+    )
 
 
 def test_analiza_instrucciones_simples_con_posiciones():
@@ -44,6 +85,10 @@ def test_analiza_instrucciones_simples_con_posiciones():
         ("LISTAR", "syntactic", 1, 7),
         ("LISTAR DISPOSITIVOS CONSULTAR luz_sala", "syntactic", 1, 21),
         ('ENVIAR CORREO A "a@b.com" "hola"', "syntactic", 1, 27),
+        ("SI luz_sala ENCENDIDO ENTONCES APAGAR luz_sala", "syntactic", 1, 13),
+        ("SI luz_sala == encendido ENTONCES APAGAR luz_sala", "syntactic", 1, 16),
+        ("SI luz_sala == ENCENDIDO APAGAR luz_sala", "syntactic", 1, 26),
+        ("SI luz_sala == ENCENDIDO ENTONCES SI", "syntactic", 1, 35),
     ],
 )
 def test_informa_fase_y_posicion_del_error(fuente, fase, linea, columna):
