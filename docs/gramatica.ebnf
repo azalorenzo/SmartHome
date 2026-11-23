@@ -1,0 +1,12 @@
+programa     = { SALTO }, instruccion, { SALTO, { SALTO }, instruccion }, { SALTO } ;
+instruccion  = simple | condicional ;
+simple       = control | consulta | listado | notificacion | correo ;
+control      = ( "ENCENDER" | "APAGAR" | "ABRIR" | "CERRAR" |
+                 "ACTIVAR" | "DESACTIVAR" ), ID ;
+consulta     = "CONSULTAR", ID ;
+listado      = "LISTAR", "DISPOSITIVOS" ;
+notificacion = "NOTIFICAR", CADENA ;
+correo       = "ENVIAR", "CORREO", "A", CADENA, "MENSAJE", CADENA ;
+condicional  = "SI", ID, "==", estado, "ENTONCES", simple ;
+estado       = "ENCENDIDO" | "APAGADO" | "ABIERTA" | "CERRADA" |
+               "ACTIVADA" | "DESACTIVADA" ;

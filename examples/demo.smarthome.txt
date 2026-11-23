@@ -1,0 +1,9 @@
+ENCENDER luz_sala
+CONSULTAR luz_sala
+ENCENDER ventilador1
+ABRIR puerta_principal
+ACTIVAR alarma1
+SI puerta_principal == ABIERTA ENTONCES CERRAR puerta_principal
+NOTIFICAR "Puerta cerrada y alarma activada"
+ENVIAR CORREO A "demo@example.com" MENSAJE "Revisión completada"
+LISTAR DISPOSITIVOS
