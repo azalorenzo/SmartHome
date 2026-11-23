@@ -77,25 +77,25 @@ def test_analiza_instrucciones_simples_con_posiciones():
 @pytest.mark.parametrize(
     ("fuente", "fase", "linea", "columna"),
     [
-        ("", "syntactic", 1, 1),
-        ("\r\n\n", "syntactic", 3, 1),
-        ("ENCENDER", "syntactic", 1, 9),
-        ("ENCENDER\nluz_sala", "syntactic", 1, 9),
-        ("ENCENDER luz_sala@", "lexical", 1, 18),
-        ("LISTAR", "syntactic", 1, 7),
-        ("LISTAR DISPOSITIVOS CONSULTAR luz_sala", "syntactic", 1, 21),
-        ('ENVIAR CORREO A "a@b.com" "hola"', "syntactic", 1, 27),
-        ("SI luz_sala ENCENDIDO ENTONCES APAGAR luz_sala", "syntactic", 1, 13),
-        ("SI luz_sala == encendido ENTONCES APAGAR luz_sala", "syntactic", 1, 16),
-        ("SI luz_sala == ENCENDIDO APAGAR luz_sala", "syntactic", 1, 26),
-        ("SI luz_sala == ENCENDIDO ENTONCES SI", "syntactic", 1, 35),
+        ("", "sintactica", 1, 1),
+        ("\r\n\n", "sintactica", 3, 1),
+        ("ENCENDER", "sintactica", 1, 9),
+        ("ENCENDER\nluz_sala", "sintactica", 1, 9),
+        ("ENCENDER luz_sala@", "lexica", 1, 18),
+        ("LISTAR", "sintactica", 1, 7),
+        ("LISTAR DISPOSITIVOS CONSULTAR luz_sala", "sintactica", 1, 21),
+        ('ENVIAR CORREO A "a@b.com" "hola"', "sintactica", 1, 27),
+        ("SI luz_sala ENCENDIDO ENTONCES APAGAR luz_sala", "sintactica", 1, 13),
+        ("SI luz_sala == encendido ENTONCES APAGAR luz_sala", "sintactica", 1, 16),
+        ("SI luz_sala == ENCENDIDO APAGAR luz_sala", "sintactica", 1, 26),
+        ("SI luz_sala == ENCENDIDO ENTONCES SI", "sintactica", 1, 35),
     ],
 )
 def test_informa_fase_y_posicion_del_error(fuente, fase, linea, columna):
     resultado = parse(fuente)
     assert isinstance(resultado, list)
     (diagnostico,) = resultado
-    assert (diagnostico.phase, diagnostico.line, diagnostico.column) == (
+    assert (diagnostico.fase, diagnostico.linea, diagnostico.columna) == (
         fase, linea, columna,
     )
-    assert diagnostico.message
+    assert diagnostico.mensaje

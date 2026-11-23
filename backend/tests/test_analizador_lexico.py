@@ -52,8 +52,8 @@ def test_informa_errores_lexicos(fuente, linea, columna):
     with pytest.raises(ErrorLexico) as error:
         tokenizar(fuente)
     diagnostico = error.value.diagnostico
-    assert (diagnostico.phase, diagnostico.line, diagnostico.column) == (
-        "lexical", linea, columna,
+    assert (diagnostico.fase, diagnostico.linea, diagnostico.columna) == (
+        "lexica", linea, columna,
     )
 
 

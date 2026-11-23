@@ -43,7 +43,7 @@ class _ErrorSintactico(Exception):
         encontrado = _DESCRIPCIONES.get(componente.tipo, repr(componente.valor))
         mensaje = f"Se esperaba {esperado}. Se encontró {encontrado}."
         self.diagnostico = Diagnostico(
-            "syntactic", componente.linea, componente.columna, mensaje
+            "sintactica", componente.linea, componente.columna, mensaje
         )
         super().__init__(mensaje)
 
