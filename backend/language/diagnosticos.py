@@ -4,7 +4,7 @@ from typing import Literal
 
 @dataclass(frozen=True)
 class Diagnostico:
-    fase: Literal["lexica", "sintactica"]
+    fase: Literal["lexica", "sintactica", "semantica"]
     linea: int
     columna: int
     mensaje: str
