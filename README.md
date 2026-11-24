@@ -48,3 +48,25 @@ Para verificar el lexer y el parser desde la raíz del proyecto:
 ```sh
 python -m pytest backend/tests
 ```
+
+## Segundo turno: semántica
+
+La tabla de símbolos está en
+[`tabla_simbolos.py`](backend/compiler/tabla_simbolos.py). Combina el catálogo
+de dispositivos con las reglas por tipo:
+
+| Tipo | Operaciones | Estados |
+|---|---|---|
+| `LUZ`, `VENTILADOR` | `ENCENDER`, `APAGAR`, `CONSULTAR` | `ENCENDIDO`, `APAGADO` |
+| `PUERTA` | `ABRIR`, `CERRAR`, `CONSULTAR` | `ABIERTA`, `CERRADA` |
+| `ALARMA` | `ACTIVAR`, `DESACTIVAR`, `CONSULTAR` | `ACTIVADA`, `DESACTIVADA` |
+
+`tabla_inicial()` devuelve los cuatro dispositivos del plan.
+`TablaSimbolos.desde_registros(filas)` construye la tabla con filas que tienen
+`id`, `label`, `type` y `state`, el formato de la tabla `devices`.
+
+`validate(programa, tabla)` recorre el programa completo y devuelve todos los
+diagnósticos con fase `semantica`, en orden. Detecta dispositivos inexistentes,
+operaciones incompatibles con el tipo, estados de `SI` incompatibles con el
+dispositivo, notificaciones y mensajes vacíos y destinatarios sin formato de
+correo.
