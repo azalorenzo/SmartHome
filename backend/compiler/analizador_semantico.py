@@ -4,18 +4,42 @@ Recorre el programa completo y devuelve todos los diagnósticos encontrados,
 para que ningún lote se ejecute si tiene un error en cualquier línea.
 """
 
+import re
+
 from backend.language.arbol_sintactico import (
     Condicional,
     Consulta,
     Control,
+    EnvioCorreo,
     Instruccion,
     InstruccionSimple,
     Nodo,
+    Notificacion,
     Programa,
 )
 from backend.language.diagnosticos import Diagnostico
 
 from .tabla_simbolos import Simbolo, TablaSimbolos
+
+
+# usuario@dominio.tld: sin espacios, con al menos un punto en el dominio.
+_CORREO = re.compile(
+    r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+"
+    r"@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?"
+    r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?)*"
+    r"\.[A-Za-z]{2,}"
+)
+_LONGITUD_MAXIMA_CORREO = 254
+
+
+def es_correo_valido(direccion: str) -> bool:
+    return (
+        len(direccion) <= _LONGITUD_MAXIMA_CORREO
+        and _CORREO.fullmatch(direccion) is not None
+        and ".." not in direccion
+        and not direccion.startswith(".")
+        and ".@" not in direccion
+    )
 
 
 class _Validador:
@@ -64,6 +88,19 @@ class _Validador:
                     )
             case Consulta(dispositivo=identificador):
                 self._dispositivo(instruccion, identificador)
+            case Notificacion(mensaje=mensaje):
+                self._mensaje(instruccion, mensaje, "La notificación")
+            case EnvioCorreo(destinatario=destinatario, mensaje=mensaje):
+                if not es_correo_valido(destinatario):
+                    self._error(
+                        instruccion,
+                        f"El destinatario {destinatario!r} no es un correo válido.",
+                    )
+                self._mensaje(instruccion, mensaje, "El mensaje del correo")
+
+    def _mensaje(self, nodo: Nodo, mensaje: str, sujeto: str) -> None:
+        if not mensaje.strip():
+            self._error(nodo, f"{sujeto} no puede estar vacío.")
 
 
 def validate(programa: Programa, tabla: TablaSimbolos) -> list[Diagnostico]:

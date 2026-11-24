@@ -64,3 +64,45 @@ def test_reune_todos_los_errores_del_programa_en_orden():
         "SI alarma1 == ABIERTA ENTONCES APAGAR puerta_principal\n"
     )
     assert [(d.linea, d.columna) for d in diagnosticos] == [(2, 1), (3, 1), (4, 1), (4, 32)]
+
+
+@pytest.mark.parametrize(
+    "direccion",
+    ["demo@example.com", "ana.lopez+casa@correo.itoaxaca.edu.mx", "a_b-c@sub-dominio.mx"],
+)
+def test_acepta_destinatarios_validos(direccion):
+    assert _validar(f'ENVIAR CORREO A "{direccion}" MENSAJE "Hola"') == []
+
+
+@pytest.mark.parametrize(
+    "direccion",
+    [
+        "", "demo", "demo@", "@example.com", "demo@example", "demo@@example.com",
+        "de mo@example.com", "demo@example.c", "demo..x@example.com",
+        ".demo@example.com", "demo.@example.com", "demo@-example.com",
+        "demo@example..com", "a" * 250 + "@ex.com",
+    ],
+)
+def test_rechaza_destinatarios_invalidos(direccion):
+    (diagnostico,) = _validar(f'ENVIAR CORREO A "{direccion}" MENSAJE "Hola"')
+    assert diagnostico.fase == "semantica"
+    assert "correo válido" in diagnostico.mensaje
+
+
+@pytest.mark.parametrize(
+    "fuente",
+    [
+        'NOTIFICAR ""',
+        'NOTIFICAR "   "',
+        'ENVIAR CORREO A "demo@example.com" MENSAJE ""',
+        'SI luz_sala == APAGADO ENTONCES NOTIFICAR "\t"',
+    ],
+)
+def test_rechaza_mensajes_vacios(fuente):
+    (diagnostico,) = _validar(fuente)
+    assert "vacío" in diagnostico.mensaje
+
+
+def test_un_correo_puede_tener_destinatario_y_mensaje_invalidos():
+    diagnosticos = _validar('ENVIAR CORREO A "demo" MENSAJE " "')
+    assert len(diagnosticos) == 2
